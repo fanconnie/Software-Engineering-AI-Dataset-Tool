@@ -111,4 +111,8 @@ volumes:
   data:
     name: dl4se-data
   server-tmp:
-  
+    name: dl4se-server-tmp
+
+networks:
+  default:
+    name: dl4se-network
