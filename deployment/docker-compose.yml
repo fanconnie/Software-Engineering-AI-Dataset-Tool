@@ -1,0 +1,114 @@
+version: '3.9'
+name: 'dl4se'
+
+services:
+
+  dl4se-db:
+    container_name: dl4se-db
+    image: postgres:15.7-alpine
+    volumes:
+      - data:/var/lib/postgresql/data
+    networks: [ default ]
+    environment:
+      TZ: UTC
+      POSTGRES_DB: dl4se
+      POSTGRES_USER: dl4se_admin
+      POSTGRES_PASSWORD: Lugano2023
+    restart: always
+    healthcheck:
+      test: pg_isready -U dl4se_admin -d dl4se
+      start_period: 5s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  dl4se-liquibase:
+    container_name: dl4se-liquibase
+    image: liquibase/liquibase:4.28.0-alpine
+    environment:
+      TZ: UTC
+    command: >
+      --username=dl4se_admin
+      --password=Lugano2023
+      --url=jdbc:postgresql://dl4se-db:5432/dl4se
+      --changeLogFile=changelog.xml
+      update
+    volumes:
+      - ../liquibase/changelog.xml:/liquibase/changelog.xml
+      - ../liquibase/scripts/:/liquibase/scripts/
+    networks: [ default ]
+    depends_on:
+      dl4se-db:
+        condition: service_healthy
+
+  dl4se-crawler:
+    container_name: dl4se-crawler
+    image: seart/dl4se-crawler:latest
+    build:
+      context: ../
+      dockerfile: deployment/crawler/Dockerfile
+    networks: [ default ]
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://dl4se-db:5432/dl4se
+      JAVA_OPTS: >
+        -Dcrawler.languages.Java=java
+        -Dcrawler.languages.Python=py
+        -Dcrawler.analyzer.core-pool-size=4
+        -Dcrawler.analyzer.max-pool-size=8
+    volumes:
+      - ./logs:/logs
+    depends_on:
+      dl4se-liquibase:
+        condition: service_completed_successfully
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+
+  dl4se-server:
+    container_name: dl4se-server
+    image: seart/dl4se-server:latest
+    build:
+      context: ../
+      dockerfile: deployment/server/Dockerfile
+    networks:
+      - default
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://dl4se-db:5432/dl4se
+      PLATFORM_WEBSITE_BASEURL: http://localhost:7031
+    volumes:
+      - ./logs:/logs
+      - server-tmp:/tmp
+    depends_on:
+      dl4se-liquibase:
+        condition: service_completed_successfully
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+    ports: [ "48002:8080" ]
+
+  dl4se-website:
+    container_name: dl4se-website
+    image: seart/dl4se-website:latest
+    build:
+      context: ../
+      dockerfile: deployment/website/Dockerfile
+    networks: 
+      - default
+    environment:
+      BASE_URL: http://localhost:48002
+    depends_on:
+      dl4se-server:
+        condition: service_healthy
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+    ports: [ "7031:80" ]
+
+volumes:
+  data:
+    name: dl4se-data
+  server-tmp:
+  

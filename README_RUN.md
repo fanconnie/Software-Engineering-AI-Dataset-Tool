@@ -33,4 +33,19 @@ mvn package -pl dl4se-server -am
 And run the archive directly:
 
 ```shell
-java -Dfile.encoding=UTF-
+java -Dfile.encoding=UTF-8 -jar dl4se-server/target/dl4se-server-1.0.0.jar
+```
+
+## Website
+
+First install all the dependencies by running:
+
+```shell
+npm install
+```
+
+To test a development build of the application locally:
+
+```shell
+npm run serve
+```
