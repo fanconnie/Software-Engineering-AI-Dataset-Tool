@@ -16,4 +16,23 @@ public class JavaBoilerplateEnumerator extends BoilerplateEnumerator {
         if (name.startsWith("get")) return Boilerplate.GETTER;
         switch (name) {
             case "equals":
-            
+            case "compareTo":
+                return Boilerplate.COMPARISON;
+            case "clone":
+                return Boilerplate.CLONER;
+            case "finalize":
+                return Boilerplate.FINALIZER;
+            case "hashCode":
+                return Boilerplate.HASHER;
+            case "readObject":
+            case "readObjectNoData":
+                return Boilerplate.DESERIALIZER;
+            case "toString":
+                return Boilerplate.STRING_CONVERSION;
+            case "writeObject":
+                return Boilerplate.SERIALIZER;
+            default:
+                return null;
+        }
+    }
+}
