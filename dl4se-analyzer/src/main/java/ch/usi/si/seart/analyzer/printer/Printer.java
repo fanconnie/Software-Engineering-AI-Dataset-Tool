@@ -7,4 +7,6 @@ import java.util.Collection;
 public interface Printer {
 
     String print(Node node);
-    String print(Nod
+    String print(Node... nodes);
+    String print(Collection<Node> nodes);
+}
