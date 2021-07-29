@@ -24,4 +24,29 @@ class JavaLineCounterTest extends JavaBaseTest {
     void countRootTest() {
         Counter counter = new LineCounter();
         Long actual = counter.count(tree.getRootNode());
-        Assertions.assertEquals(getInput().lines().count(), actual, messa
+        Assertions.assertEquals(getInput().lines().count(), actual, message);
+    }
+
+    @Test
+    void countChildrenTest() {
+        Counter counter = new LineCounter();
+        Node root = tree.getRootNode();
+        Node package_declaration = root.getChild(0);
+        Node class_declaration = root.getChild(1);
+        Long actual = counter.count(package_declaration, class_declaration);
+        // Subtract one for the lost space between package and class
+        Assertions.assertEquals(getInput().lines().count() - 1, actual, message);
+    }
+
+    @Test
+    void countChildrenOnSameLineTest() {
+        Counter counter = new LineCounter();
+        String input = "/* */ class _ {\n}\n";
+        @Cleanup Tree tree = parser.parse(input);
+        Node root = tree.getRootNode();
+        Node comment = root.getChild(0);
+        Node class_declaration = root.getChild(1);
+        Long actual = counter.count(comment, class_declaration);
+        Assertions.assertEquals(input.lines().count(), actual);
+    }
+}
