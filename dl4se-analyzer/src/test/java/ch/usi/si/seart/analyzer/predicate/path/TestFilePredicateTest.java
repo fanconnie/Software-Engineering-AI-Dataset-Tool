@@ -32,4 +32,6 @@ class TestFilePredicateTest {
     @ArgumentsSource(PathPredicateProvider.class)
     void pathPredicateTest(Path path, boolean expected) {
         Predicate<Path> predicate = new TestFilePredicate() {};
-        As
+        Assertions.assertEquals(expected, predicate.test(path));
+    }
+}
