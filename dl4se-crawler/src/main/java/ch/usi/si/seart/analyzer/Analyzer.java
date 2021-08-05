@@ -219,4 +219,52 @@ public class Analyzer implements AutoCloseable {
 
                 @Override
                 protected Printer getAstPrinter() {
-                    return new 
+                    return new OffsetSyntaxTreePrinter(new Point(-1, 0));
+                }
+            };
+        } else {
+            return new FunctionSyntaxTreePrinter() {};
+        }
+    }
+
+    private abstract class FunctionSyntaxTreePrinter implements Printer {
+
+        protected String wrap(String content) {
+            return content;
+        }
+
+        protected List<Node> getTargets(Tree tree) {
+            return tree.getRootNode().getChildren();
+        }
+
+        protected Printer getAstPrinter() {
+            return syntaxTreePrinter;
+        }
+
+        @Override
+        public String print(Node node) {
+            return print(List.of(node));
+        }
+
+        @Override
+        public String print(Node... nodes) {
+            return print(List.of(nodes));
+        }
+
+        @Override
+        public String print(Collection<Node> nodes) {
+            String content = nodePrinter.print(nodes);
+            String wrapped = wrap(content);
+            @Cleanup Tree tree = parser.parse(wrapped);
+            List<Node> targets = getTargets(tree);
+            Printer astPrinter = getAstPrinter();
+            return astPrinter.print(targets);
+        }
+    }
+
+    private static String readFile(Path path) throws IOException {
+        @Cleanup Reader fileReader = new FileReader(path.toFile());
+        @Cleanup Reader filterReader = new NullFilteredReader(fileReader);
+        return CharStreams.toString(filterReader);
+    }
+}
