@@ -11,4 +11,6 @@ public class StringToDurationConverter implements Converter<String, Duration> {
 
     @Override
     public Duration convert(String source) {
-        return DurationSt
+        return DurationStyle.detectAndParse(source);
+    }
+}
