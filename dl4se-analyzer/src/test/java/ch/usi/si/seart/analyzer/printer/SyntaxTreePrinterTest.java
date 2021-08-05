@@ -61,4 +61,88 @@ class SyntaxTreePrinterTest extends JavaBaseTest {
                                             "<identifier name=\"name\" start=\"3:37\" end=\"3:41\">" +
                                             "</identifier>" +
                                         "</formal_parameter>" +
-                                    "</for
+                                    "</formal_parameters>" +
+                                    "<block name=\"body\" start=\"3:43\" end=\"6:5\">" +
+                                        "<line_comment start=\"4:8\" end=\"4:22\">" +
+                                        "</line_comment>" +
+                                        "<expression_statement start=\"5:8\" end=\"5:44\">" +
+                                            "<method_invocation start=\"5:8\" end=\"5:43\">" +
+                                                "<field_access name=\"object\" start=\"5:8\" end=\"5:18\">" +
+                                                    "<identifier name=\"object\" start=\"5:8\" end=\"5:14\">" +
+                                                    "</identifier>" +
+                                                    "<identifier name=\"field\" start=\"5:15\" end=\"5:18\">" +
+                                                    "</identifier>" +
+                                                "</field_access>" +
+                                                "<identifier name=\"name\" start=\"5:19\" end=\"5:26\">" +
+                                                "</identifier>" +
+                                                "<argument_list name=\"arguments\" start=\"5:26\" end=\"5:43\">" +
+                                                    "<string_literal start=\"5:27\" end=\"5:42\">" +
+                                                    "</string_literal>" +
+                                                "</argument_list>" +
+                                            "</method_invocation>" +
+                                        "</expression_statement>" +
+                                    "</block>" +
+                                "</method_declaration>" +
+                            "</class_body>" +
+                        "</class_declaration>" +
+                    "</program>" +
+                SyntaxTreePrinter.TAG_CLOSE ;
+        Assertions.assertEquals(expected, actual);
+    }
+
+    @Test
+    void printChildTest() {
+        Printer printer = new SyntaxTreePrinter();
+        Node root = tree.getRootNode();
+        Node method = root.getChild(1).getChildByFieldName("body").getChild(1);
+        String actual = printer.print(method);
+        String expected =
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                SyntaxTreePrinter.TAG_OPEN +
+                    "<method_declaration start=\"3:4\" end=\"6:5\">" +
+                        "<modifiers start=\"3:4\" end=\"3:17\">" +
+                        "</modifiers>" +
+                        "<void_type name=\"type\" start=\"3:18\" end=\"3:22\">" +
+                        "</void_type>" +
+                        "<identifier name=\"name\" start=\"3:23\" end=\"3:27\">" +
+                        "</identifier>" +
+                        "<formal_parameters name=\"parameters\" start=\"3:27\" end=\"3:42\">" +
+                            "<formal_parameter start=\"3:28\" end=\"3:41\">" +
+                                "<array_type name=\"type\" start=\"3:28\" end=\"3:36\">" +
+                                    "<type_identifier name=\"element\" start=\"3:28\" end=\"3:34\">" +
+                                    "</type_identifier>" +
+                                    "<dimensions name=\"dimensions\" start=\"3:34\" end=\"3:36\">" +
+                                    "</dimensions>" +
+                                "</array_type>" +
+                                "<identifier name=\"name\" start=\"3:37\" end=\"3:41\">" +
+                                "</identifier>" +
+                            "</formal_parameter>" +
+                        "</formal_parameters>" +
+                        "<block name=\"body\" start=\"3:43\" end=\"6:5\">" +
+                            "<line_comment start=\"4:8\" end=\"4:22\">" +
+                            "</line_comment>" +
+                            "<expression_statement start=\"5:8\" end=\"5:44\">" +
+                                "<method_invocation start=\"5:8\" end=\"5:43\">" +
+                                    "<field_access name=\"object\" start=\"5:8\" end=\"5:18\">" +
+                                        "<identifier name=\"object\" start=\"5:8\" end=\"5:14\">" +
+                                        "</identifier>" +
+                                        "<identifier name=\"field\" start=\"5:15\" end=\"5:18\">" +
+                                        "</identifier>" +
+                                    "</field_access>" +
+                                    "<identifier name=\"name\" start=\"5:19\" end=\"5:26\">" +
+                                    "</identifier>" +
+                                    "<argument_list name=\"arguments\" start=\"5:26\" end=\"5:43\">" +
+                                        "<string_literal start=\"5:27\" end=\"5:42\">" +
+                                        "</string_literal>" +
+                                    "</argument_list>" +
+                                "</method_invocation>" +
+                            "</expression_statement>" +
+                        "</block>" +
+                    "</method_declaration>" +
+                SyntaxTreePrinter.TAG_CLOSE;
+        Assertions.assertEquals(expected, actual);
+    }
+
+    @Test
+    void printMultipleTest() {
+        Printer printer = ne
