@@ -88,4 +88,29 @@ class OffsetSyntaxTreePrinterTest extends JavaBaseTest {
                                 "<identifier name=\"name\" start=\"2:35\" end=\"2:39\">" +
                                 "</identifier>" +
                             "</formal_parameter>" +
-                        "</formal_parameter
+                        "</formal_parameters>" +
+                        "<block name=\"body\" start=\"2:41\" end=\"5:3\">" +
+                            "<line_comment start=\"3:6\" end=\"3:20\">" +
+                            "</line_comment>" +
+                            "<expression_statement start=\"4:6\" end=\"4:42\">" +
+                                "<method_invocation start=\"4:6\" end=\"4:41\">" +
+                                    "<field_access name=\"object\" start=\"4:6\" end=\"4:16\">" +
+                                        "<identifier name=\"object\" start=\"4:6\" end=\"4:12\">" +
+                                        "</identifier>" +
+                                        "<identifier name=\"field\" start=\"4:13\" end=\"4:16\">" +
+                                        "</identifier>" +
+                                    "</field_access>" +
+                                    "<identifier name=\"name\" start=\"4:17\" end=\"4:24\">" +
+                                    "</identifier>" +
+                                    "<argument_list name=\"arguments\" start=\"4:24\" end=\"4:41\">" +
+                                        "<string_literal start=\"4:25\" end=\"4:40\">" +
+                                        "</string_literal>" +
+                                    "</argument_list>" +
+                                "</method_invocation>" +
+                            "</expression_statement>" +
+                        "</block>" +
+                    "</method_declaration>" +
+                OffsetSyntaxTreePrinter.TAG_CLOSE;
+        Assertions.assertEquals(expected, actual);
+    }
+}
