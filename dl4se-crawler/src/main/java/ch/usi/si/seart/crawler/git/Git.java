@@ -187,4 +187,119 @@ public class Git implements AutoCloseable {
      * @throws GitException If either of the commit SHAs is malformed or invalid.
      * @see <a href="https://git-scm.com/docs/git-diff">Git Diff Documentation</a>
      */
-    public Git.Diff getDiff(String startSHA, String endSHA) t
+    public Git.Diff getDiff(String startSHA, String endSHA) throws GitException {
+        return new Diff(startSHA, endSHA);
+    }
+
+    /**
+     * Used to retrieve a summary of changes made between two specified commits.
+     * The changelist excludes changes from the starting commit, but includes those made in the end commit.
+     * It is also limited to files whose language is contained in the supplied {@code Language} set.
+     *
+     * @param startSHA The start commit SHA.
+     * @param endSHA The end commit SHA.
+     * @param languages The set of languages to filter by.
+     * @return A {@code Diff} object, summarizing the different types of changes made to the files.
+     * @throws GitException If either of the commit SHAs is malformed or invalid.
+     * @see <a href="https://git-scm.com/docs/git-diff">Git Diff Documentation</a>
+     */
+    public Git.Diff getDiff(String startSHA, String endSHA, Set<Language> languages) throws GitException {
+        String[] extensions = languages.stream()
+                .map(Language::getExtensions)
+                .flatMap(Collection::stream)
+                .map(ext -> "***." + ext)
+                .toArray(String[]::new);
+        return new Diff(startSHA, endSHA, extensions);
+    }
+
+    /**
+     * Class used to represent a {@code diff}: the changes made between commits.
+     * It serves as a container for 6 types of file changes:
+     * <ul>
+     *     <li>{@code added} files ({@code A})</li>
+     *     <li>{@code deleted} files ({@code D})</li>
+     *     <li>{@code modified} files ({@code M})</li>
+     *     <li>{@code renamed} files ({@code R100})</li>
+     *     <li>{@code edited} files ({@code R0XX})</li>
+     *     <li>{@code copied} files ({@code CXXX})</li>
+     * </ul>
+     */
+    @Getter
+    @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+    public class Diff {
+        List<Path> added = new ArrayList<>();
+        List<Path> deleted = new ArrayList<>();
+        List<Path> modified = new ArrayList<>();
+        Map<Path, Path> renamed = new HashMap<>();
+        Map<Path, Path> edited = new HashMap<>();
+        Map<Path, Path> copied = new HashMap<>();
+
+        Consumer<String> addedConsumer = singlePathConsumer(added);
+        Consumer<String> deletedConsumer = singlePathConsumer(deleted);
+        Consumer<String> modifiedConsumer = singlePathConsumer(modified);
+        Consumer<String> renamedConsumer = doublePathConsumer(renamed);
+        Consumer<String> editedConsumer = doublePathConsumer(edited);
+        Consumer<String> copiedConsumer = doublePathConsumer(copied);
+
+        private Consumer<String> singlePathConsumer(List<Path> structure) {
+            return line -> {
+                String[] tokens = line.split("\t");
+                Path path = Path.of(tokens[1]);
+                structure.add(path);
+            };
+        }
+
+        private Consumer<String> doublePathConsumer(Map<Path, Path> structure) {
+            return line -> {
+                String[] tokens = line.split("\t");
+                Path before = Path.of(tokens[1]);
+                Path after = Path.of(tokens[2]);
+                structure.put(before, after);
+            };
+        }
+
+        private Diff(String startSHA, String endSHA) throws GitException {
+            Process process = executeGitCommand("diff", "--name-status", "--diff-filter=ADMRC", startSHA, endSHA);
+            processOutput(process);
+        }
+
+        private Diff(String startSHA, String endSHA, String... extensions) throws GitException {
+            String[] base = new String[] { "diff", "--name-status", "--diff-filter=ADMRC", startSHA, endSHA, "--" };
+            String[] command = ObjectArrays.concat(base, extensions, String.class);
+            Process process = executeGitCommand(command);
+            processOutput(process);
+        }
+
+        private void processOutput(Process process) throws GitException {
+            checkFailure(process);
+
+            String output = stringifyInputStream(process.getInputStream());
+            output.lines().forEach(line -> {
+                Consumer<String> consumer;
+                char status = line.charAt(0);
+                switch (status) {
+                    case 'A': consumer = addedConsumer; break;
+                    case 'D': consumer = deletedConsumer; break;
+                    case 'M': consumer = modifiedConsumer; break;
+                    case 'C': consumer = copiedConsumer; break;
+                    default:
+                        String type = line.split("\t")[0];
+                        if (type.equals("R100")) consumer = renamedConsumer;
+                        else if (type.matches("R0\\d\\d")) consumer = editedConsumer;
+                        else throw new IllegalArgumentException("Unknown change type: ["+type+"], in diff line: " + line);
+                }
+                consumer.accept(line);
+            });
+        }
+
+        /**
+         * @return A simplified output of the calculated diff.
+         * The percentages for copied and edited files are not preserved.
+         */
+        @Override
+        public String toString() {
+            StringBuilder builder = new StringBuilder();
+            added.forEach(path -> builder.append("A\t").append(path).append('\n'));
+            deleted.forEach(path -> builder.append("D\t").append(path).append('\n'));
+            modified.forEach(path -> builder.append("M\t").append(path).append('\n'));
+            renamed.forEach((p1, p2) -> builder.append("R\t").append(p1).append('\t').append(p2).ap
