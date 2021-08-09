@@ -302,4 +302,47 @@ public class Git implements AutoCloseable {
             added.forEach(path -> builder.append("A\t").append(path).append('\n'));
             deleted.forEach(path -> builder.append("D\t").append(path).append('\n'));
             modified.forEach(path -> builder.append("M\t").append(path).append('\n'));
-            renamed.forEach((p1, p2) -> builder.append("R\t").append(p1).append('\t').append(p2).ap
+            renamed.forEach((p1, p2) -> builder.append("R\t").append(p1).append('\t').append(p2).append('\n'));
+            copied.forEach((p1, p2) -> builder.append("C\t").append(p1).append('\t').append(p2).append('\n'));
+            edited.forEach((p1, p2) -> builder.append("E\t").append(p1).append('\t').append(p2).append('\n'));
+            return builder.toString();
+        }
+    }
+
+    private void checkFailure(Process process) throws GitException {
+        if (process.exitValue() != 0){
+            String errorMessage = stringifyInputStream(process.getErrorStream());
+            throw new GitException("Operation failed for ["+name+"]:\n" + errorMessage);
+        }
+    }
+
+    @SneakyThrows({IOException.class, InterruptedException.class})
+    private Process executeGitCommand(String... args) {
+        List<String> command = new ArrayList<>();
+        command.add("git");
+        command.addAll(Arrays.asList(args));
+
+        ProcessBuilder builder = new ProcessBuilder(command);
+        builder.directory(localDir.toFile());
+        Process process = builder.start();
+        process.waitFor();
+        return process;
+    }
+
+    @SneakyThrows(IOException.class)
+    public String stringifyInputStream(InputStream source) {
+        try (Reader reader = new InputStreamReader(source)) {
+            return CharStreams.toString(reader);
+        }
+    }
+
+    @Override
+    @SneakyThrows(InterruptedException.class)
+    public void close() throws IOException {
+        ProcessBuilder builder = new ProcessBuilder();
+        builder.command("rm", "-rf", localDir.getFileName().toString());
+        builder.directory(localDir.getParent().toFile());
+        Process process = builder.start();
+        process.waitFor();
+    }
+}
