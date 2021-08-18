@@ -1,3 +1,4 @@
+
 package ch.usi.si.seart.server.config.properties;
 
 import lombok.AccessLevel;
@@ -6,22 +7,16 @@ import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.ConstructorBinding;
-import org.springframework.scheduling.support.CronTrigger;
 
 import javax.validation.constraints.NotNull;
+import java.net.URL;
 
 @Getter
-@ConfigurationProperties(prefix = "platform.scheduling", ignoreUnknownFields = false)
+@ConfigurationProperties(prefix = "platform.website", ignoreUnknownFields = false)
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @AllArgsConstructor(onConstructor_ = @ConstructorBinding)
-public class SchedulingProperties {
+public class WebsiteProperties {
 
     @NotNull
-    CronTrigger taskCleanerCron;
-
-    @NotNull
-    CronTrigger repoMaintainerCron;
-
-    @NotNull
-    CronTrigger viewMaintainerCron;
+    URL baseURL;
 }
