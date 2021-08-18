@@ -51,4 +51,33 @@ public class File extends Code {
     @ManyToOne(optional = false)
     @JoinColumn(name="version_id")
     @JsonProperty(value = "tree_sitter_version")
-    
+    TreeSitterVersion treeSitterVersion;
+
+    @OneToMany(mappedBy = "file", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @Builder.Default
+    @JsonIgnore
+    List<Function> functions = new ArrayList<>();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        File file = (File) o;
+        return id != null && Objects.equals(id, file.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(repo.getName(), path, contentHash, getClass().hashCode());
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", File.class.getSimpleName() + "(", ")")
+                .add("id=" + id)
+                .add("repo=" + repo)
+                .add("path='" + path + "'")
+                .add("language=" + language)
+                .toString();
+    }
+}
