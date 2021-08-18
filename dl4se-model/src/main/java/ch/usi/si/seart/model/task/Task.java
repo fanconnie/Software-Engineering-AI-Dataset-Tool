@@ -47,3 +47,96 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @FieldDefaults(level = AccessLevel.PROTECTED)
+@TypeDefs({
+        @TypeDef(name = "json", typeClass = JsonType.class),
+        @TypeDef(name = "postgres-enum", typeClass = PostgreSQLEnumType.class)
+})
+public class Task {
+
+    @Id
+    @GeneratedValue
+    @JsonIgnore
+    Long id;
+
+    @NotNull
+    @Type(type = "pg-uuid")
+    @Column(unique = true)
+    @Builder.Default
+    UUID uuid = UUID.randomUUID();
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "user_id")
+    User user;
+
+    @Basic(optional = false)
+    @Enumerated(EnumType.STRING)
+    @Type(type = "postgres-enum")
+    Dataset dataset;
+
+    @NotNull
+    @Type(type = "json")
+    @Builder.Default
+    JsonNode query = JsonNodeFactory.instance.objectNode();
+
+    @NotNull
+    @Type(type = "json")
+    @Builder.Default
+    JsonNode processing = JsonNodeFactory.instance.objectNode();
+
+    @Basic(optional = false)
+    @Enumerated(EnumType.STRING)
+    @Type(type = "postgres-enum")
+    @Builder.Default
+    Status status = Status.QUEUED;
+
+    @Version
+    @JsonIgnore
+    Long version;
+
+    @Column(name = "checkpoint_id")
+    @JsonProperty(value = "checkpoint_id")
+    Long checkpointId;
+
+    @PositiveOrZero
+    @Column(name = "processed_results")
+    @JsonProperty(value = "processed_results")
+    @Builder.Default
+    Long processedResults = 0L;
+
+    @PositiveOrZero
+    @Column(name = "total_results")
+    @JsonProperty(value = "total_results")
+    @Builder.Default
+    Long totalResults = 0L;
+
+    @PastOrPresent
+    LocalDateTime submitted;
+
+    LocalDateTime started;
+
+    LocalDateTime finished;
+
+    @NotNull
+    @Builder.Default
+    Boolean expired = false;
+
+    @Column(name = "error_stack_trace")
+    @JsonProperty(value = "error_stack_trace")
+    String errorStackTrace;
+
+    @PositiveOrZero
+    Long size;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        Task task = (Task) o;
+        return id != null && Objects.equals(id, task.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(user, dataset, query, processing);
+    }
+}
