@@ -12,4 +12,6 @@ public interface UniversityDomainsListClient {
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
     JsonNode search(@RequestParam("domain") String domain);
 
-    @GetMapping(value = "/search", pro
+    @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
+    JsonNode search(@RequestParam("name") String name, @RequestParam("limit") Integer limit);
+}
