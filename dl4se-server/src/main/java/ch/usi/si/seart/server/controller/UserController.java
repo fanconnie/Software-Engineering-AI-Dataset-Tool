@@ -163,4 +163,11 @@ public class UserController {
             @NotBlank @RequestBody String organisation,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        User requester = userService.get
+        User requester = userService.getWithId(principal.getId());
+        if (!requester.getOrganisation().equals(organisation)) {
+            requester.setOrganisation(organisation);
+            userService.update(requester);
+        }
+        return ResponseEntity.ok().build();
+    }
+}
