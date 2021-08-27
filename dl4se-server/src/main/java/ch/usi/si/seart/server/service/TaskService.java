@@ -86,4 +86,105 @@ public interface TaskService {
         }
 
         @Override
-        public long countActiveTasks(User use
+        public long countActiveTasks(User user) {
+            return taskRepository.countAllByUserAndStatusIn(user, Statuses.ACTIVE);
+        }
+
+        @Override
+        public boolean activeTaskExists(User user, Dataset dataset, JsonNode query, JsonNode processing) {
+            int taskHash = Objects.hash(user, dataset, query, processing);
+            return taskRepository.findAllByUserAndStatusIn(user, Statuses.ACTIVE)
+                    .stream()
+                    .mapToInt(Task::hashCode)
+                    .anyMatch(hash -> hash == taskHash);
+        }
+
+        @Override
+        public void create(
+                User requester, Dataset dataset, JsonNode query, JsonNode processing, LocalDateTime requestedAt
+        ) {
+            taskRepository.save(
+                    Task.builder()
+                            .user(requester)
+                            .dataset(dataset)
+                            .query(query)
+                            .processing(processing)
+                            .submitted(requestedAt)
+                            .build()
+            );
+        }
+
+        @Override
+        @Transactional(propagation = Propagation.REQUIRES_NEW)
+        public Task update(Task task) {
+            Lock taskLock = locks.getLock(task);
+            taskLock.lock();
+            try {
+                return taskRepository.saveAndFlush(task);
+            } finally {
+                taskLock.unlock();
+            }
+        }
+
+        @Override
+        @Transactional(propagation = Propagation.REQUIRES_NEW)
+        public void cancel(Task task) {
+            Lock taskLock = locks.getLock(task);
+            taskLock.lock();
+            try {
+                taskRepository.markForCancellation(task.getId());
+            } finally {
+                taskLock.unlock();
+            }
+        }
+
+        @Override
+        @Transactional(propagation = Propagation.REQUIRES_NEW)
+        public void registerException(TaskFailedException ex) {
+            Task task = ex.getTask();
+            Throwable cause = ex.getCause();
+
+            StringWriter stringWriter = new StringWriter();
+            PrintWriter printWriter = new PrintWriter(stringWriter);
+            cause.printStackTrace(printWriter);
+            String stackTrace = stringWriter.toString();
+
+            task.setStatus(Status.ERROR);
+            task.setFinished(LocalDateTime.now(ZoneOffset.UTC));
+            task.setExpired(true);
+            task.setErrorStackTrace(stackTrace);
+
+            taskRepository.saveAndFlush(task);
+        }
+
+        @Override
+        @Transactional(propagation = Propagation.REQUIRES_NEW)
+        public void forEachNonExpired(Consumer<Task> consumer) {
+            LocalDateTime oneWeekAgo = LocalDateTime.now(ZoneOffset.UTC).minusWeeks(1);
+            @Cleanup Stream<Task> taskStream = taskRepository.findAllByFinishedLessThanAndExpired(oneWeekAgo, false);
+            taskStream.forEach(consumer);
+        }
+
+        @Override
+        @Transactional
+        public Optional<Task> getNext() {
+            return taskRepository.findFirstByStatusOrderBySubmitted(Status.QUEUED)
+                    .map(task -> {
+                        task.setStatus(Status.EXECUTING);
+                        if (task.getStarted() == null)
+                            task.setStarted(LocalDateTime.now(ZoneOffset.UTC));
+                        return task;
+                    });
+        }
+
+        public Page<Task> getAll(Specification<Task> specification, Pageable pageable) {
+            return taskRepository.findAll(specification, pageable);
+        }
+
+        @Override
+        public Task getWithUUID(UUID uuid) {
+            return taskRepository.findByUuid(uuid)
+                    .orElseThrow(() -> new TaskNotFoundException(Task_.uuid, uuid));
+        }
+    }
+}
