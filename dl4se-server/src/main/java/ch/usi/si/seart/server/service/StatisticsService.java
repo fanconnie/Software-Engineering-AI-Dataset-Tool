@@ -109,3 +109,56 @@ public interface StatisticsService {
             return countByLanguage(fileRepository::countByLanguage);
         }
 
+        @Override
+        public Map<Language, Long> countFunctionsByLanguage() {
+            return countByLanguage(functionRepository::countByLanguage);
+        }
+
+        private Map<Language, Long> countByLanguage(Supplier<Collection<GroupedCount<Language>>> supplier) {
+            return supplier.get().stream().collect(Collectors.toUnmodifiableMap(
+                    Map.Entry::getKey,
+                    Map.Entry::getValue
+            ));
+        }
+
+        @Override
+        public Long countTasks() {
+            return taskRepository.count();
+        }
+
+        @Override
+        public Long countTasks(User user) {
+            return taskRepository.countAllByUser(user);
+        }
+
+        @Override
+        public Map<Status, Long> countTasksByStatus() {
+            return supplyToMap(taskRepository::countAllGroupByStatus);
+        }
+
+        @Override
+        public Map<Status, Long> countTasksByStatus(User user) {
+            return supplyToMap(() -> taskRepository.countAllByUserGroupByStatus(user));
+        }
+
+        @Override
+        public Long getTotalTaskSize() {
+            return taskRepository.sumSize();
+        }
+
+        @Override
+        public Long getTotalTaskSize(User user) {
+            return taskRepository.sumSizeByUser(user);
+        }
+
+        private Map<Status, Long> supplyToMap(Supplier<List<Tuple>> tupleResultQuery) {
+            Stream<Map.Entry<Status, Long>> noResultStream = Stream.of(Status.values())
+                    .map(status -> Map.entry(status, 0L));
+            Stream<Map.Entry<Status, Long>> queryResultStream = tupleResultQuery.get().stream()
+                    .map(tuple -> Map.entry(tuple.get(0, Status.class), tuple.get(1, Long.class)));
+            return Stream.concat(noResultStream, queryResultStream).collect(
+                    Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (v1, v2) -> v2)
+            );
+        }
+    }
+}
