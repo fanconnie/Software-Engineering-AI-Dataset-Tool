@@ -51,4 +51,26 @@ public interface UserService {
         }
 
         @Override
-        public Page<User> getAll(Specification<
+        public Page<User> getAll(Specification<User> specification, Pageable pageable) {
+            return userRepository.findAll(specification, pageable);
+        }
+
+        @Override
+        public User getWithId(Long id) {
+            return userRepository.findById(id)
+                    .orElseThrow(() -> new UserNotFoundException(User_.id, id));
+        }
+
+        @Override
+        public User getWithUid(String uid) {
+            return userRepository.findByUid(uid)
+                    .orElseThrow(() -> new UserNotFoundException(User_.uid, uid));
+        }
+
+        @Override
+        public User getWithEmail(String email) {
+            return userRepository.findByEmail(email)
+                    .orElseThrow(() -> new UserNotFoundException(User_.email, email));
+        }
+    }
+}
