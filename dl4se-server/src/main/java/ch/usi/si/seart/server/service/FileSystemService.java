@@ -58,3 +58,25 @@ public interface FileSystemService {
             }
         }
 
+        @Override
+        public Long getArchiveSize(Task task) {
+            Path path = getPath(task);
+            File file = path.toFile();
+            return file.length();
+        }
+
+        private Path getPath(Task task) {
+            return Path.of(basedir.toString(), task.getUuid() + ".jsonl.gz");
+        }
+
+        @Override
+        public void afterPropertiesSet() throws IOException {
+            try {
+                Files.createDirectory(basedir);
+            } catch (FileAlreadyExistsException ignored) {
+            } finally {
+                log.info("File storage directory: '{}'", basedir);
+            }
+        }
+    }
+}
