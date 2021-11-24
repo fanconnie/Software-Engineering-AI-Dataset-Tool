@@ -42,4 +42,24 @@ public interface ReadOnlyRepository<T, ID> extends Repository<T, ID> {
     /*
      * (non-Javadoc)
      * @see org.springframework.data.repository.CrudRepository#findById(Object)
-  
+     */
+    Optional<T> findById(ID id);
+
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.repository.CrudRepository#findAll(Iterable)
+     */
+    List<T> findAllById(Iterable<ID> ids);
+
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.repository.CrudRepository#existsById(Object)
+     */
+    boolean existsById(ID id);
+
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.repository.CrudRepository#count()
+     */
+    long count();
+}
