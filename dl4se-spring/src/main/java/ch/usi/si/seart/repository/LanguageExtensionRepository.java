@@ -7,4 +7,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import javax.validation.constraints.NotBlank;
-import java.u
+import java.util.Optional;
+
+public interface LanguageExtensionRepository extends ReadOnlyRepository<LanguageExtension, LanguageExtension.Key> {
+
+    @Query("SELECT language FROM LanguageExtension WHERE extension = :extension")
+    Optional<Language> findLanguageByExtension(@NotBlank @Param("extension") String extension);
+}
