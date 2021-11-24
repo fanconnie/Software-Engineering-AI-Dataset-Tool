@@ -30,4 +30,5 @@ public final class ReadableFileSize {
         }
         value *= Long.signum(bytes);
         return String.format("%.2f %cB", value / UNIT, ci.current());
-  
+    }
+}
