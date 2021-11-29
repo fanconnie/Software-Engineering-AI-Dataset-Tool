@@ -4,4 +4,6 @@ public class JavaLineCommentRemover extends JavaNodeRemover {
 
     @Override
     protected String getPattern() {
-    
+        return "(line_comment) @target";
+    }
+}
