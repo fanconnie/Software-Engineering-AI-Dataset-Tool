@@ -1,0 +1,22 @@
+
+@import "node_modules/bootstrap/scss/_mixins.scss"
+
+@mixin btn-accent($selector: ".btn")
+  #{$selector}
+    border-width: 2px!important
+  @each $color, $value in $theme-colors
+    #{$selector}.btn-#{$color}
+      border-color: darken($value, 25%)!important
+
+@mixin bg-svg($d, $color: $black, $fill-rule: null)
+  $fill: str-slice(#{$color}, 2)
+  $svg-value: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23#{$fill}' viewBox='0 0 16 16'%3E%3Cpath fill-rule='#{$fill-rule}' d='#{$d}'/%3E%3C/svg%3E"
+  background-image: url($svg-value)
+
+@mixin bg-chevron-up($fill-hash)
+  $chevron-up: "M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"
+  @include bg-svg($chevron-up, $fill-hash, evenodd)
+
+@mixin bg-chevron-down($fill-hash)
+  $chevron-down: "M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"
+  @include bg-svg($chevron-down, $fill-hash, evenodd)
