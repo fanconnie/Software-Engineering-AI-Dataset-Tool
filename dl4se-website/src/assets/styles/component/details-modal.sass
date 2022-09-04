@@ -1,0 +1,18 @@
+
+@import "@/assets/styles/variables"
+@import "@/assets/styles/mixins"
+
+.tab-pane
+  padding: 0!important
+
+::v-deep
+  .modal-body code.hljs
+    padding: map-get($spacers, 3)!important
+    position: static!important
+
+  .modal-body > *
+    border-radius: 0!important
+  .modal-content
+    border-radius: 0!important
+  .modal-footer
+    @include btn-accent
