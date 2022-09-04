@@ -1,0 +1,23 @@
+@import "@/assets/styles/variables"
+
+h1
+  margin-bottom: map-get($spacers, 3)!important
+
+form
+  $width: 290px
+
+  input, .input-group
+    width: $width!important
+
+  .bi
+    margin: 3px 0!important
+
+  .form-text,
+  .invalid-feedback
+    width: $width!important
+    display: flex!important
+    flex-direction: row!important
+    gap: 5px!important
+
+  .form-row
+    justify-content: center!important
