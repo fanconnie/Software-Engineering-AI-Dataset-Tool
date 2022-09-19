@@ -1,0 +1,27 @@
+
+@import "@/assets/styles/variables"
+
+section
+  display: flex!important
+  flex-direction: column!important
+  justify-content: center!important
+
+.branding
+  margin: 0!important
+  font-size: calc(3rem + 3vw)!important
+
+  .negative
+    $padding-large: map-get($spacers, 4)
+    $padding-small: map-get($spacers, 2)
+    padding-left: calc($padding-large + 0.5vw)!important
+    padding-right: $padding-small!important
+    color: $white!important
+    background-color: $black!important
+
+  .positive
+    color: $black!important
+
+.carousel
+  ::v-deep
+    .card-title
+      text-align: center!important
