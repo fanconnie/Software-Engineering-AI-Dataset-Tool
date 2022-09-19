@@ -88,4 +88,10 @@ export default {
   },
   data() {
     return {
-      count
+      count: this.value,
+    };
+  },
+};
+</script>
+
+<style scoped lang="sass" src="@/assets/styles/component/counter.sass" />
