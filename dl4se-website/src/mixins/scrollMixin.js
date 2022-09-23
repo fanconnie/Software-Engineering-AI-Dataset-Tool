@@ -14,4 +14,13 @@ export default {
           x: Math.round(window.scrollX),
           y: Math.round(window.scrollY),
         };
-  
+      };
+
+      this._scrollListener();
+      window.addEventListener("scroll", this._scrollListener);
+    }
+  },
+  beforeDestroy() {
+    window.removeEventListener("scroll", this._scrollListener);
+  },
+};
