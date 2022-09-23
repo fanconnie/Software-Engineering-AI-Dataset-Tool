@@ -127,4 +127,4 @@ export default {
 };
 </script>
 
-<style scoped lang="sass" src="@/assets/styles/component/paginated-table.sass
+<style scoped lang="sass" src="@/assets/styles/component/paginated-table.sass" />
