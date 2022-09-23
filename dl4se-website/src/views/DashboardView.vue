@@ -54,4 +54,136 @@
                 <template v-if="row.value.started">
                   <b-icon-dash-lg shift-v="-1" />
                   <b-icon-calendar-play
-                    v-b-tooltip.html
+                    v-b-tooltip.html="`Started at:<br />${row.value.started.toISOString()}`"
+                    font-scale="1.35"
+                  />
+                </template>
+                <template v-else>
+                  <b-icon-blank />
+                  <b-icon-blank font-scale="1.35" />
+                </template>
+                <template v-if="row.value.finished">
+                  <b-icon-dash-lg shift-v="-1" />
+                  <component
+                    :is="statusToCalendarIcon(row.item.status)"
+                    v-b-tooltip.html="`${startCase(row.item.status)} at:<br />${row.value.finished.toISOString()}`"
+                    font-scale="1.35"
+                  />
+                </template>
+                <template v-else>
+                  <b-icon-blank />
+                  <b-icon-blank font-scale="1.35" />
+                </template>
+              </div>
+            </template>
+            <template #cell(progress)="row">
+              <div class="d-flex flex-column text-center">
+                <template v-if="row.value.status === 'FINISHED' && !row.value.total">
+                  <span class="text-nowrap">No Results</span>
+                </template>
+                <template v-else>
+                  <span>{{ row.value.percentage }}</span>
+                  <b-progress
+                    :max="row.value.total"
+                    :value="row.value.processed"
+                    v-b-tooltip.html="`Total Instances:<br />${row.value.total}`"
+                    tabindex="0"
+                  />
+                </template>
+              </div>
+            </template>
+            <template #cell(details)="row">
+              <div class="d-inline-flex gap-1">
+                <b-button
+                  @click="display('Submitter', row.item.user, $event.target)"
+                  v-b-tooltip="'Show User Details'"
+                  size="sm"
+                >
+                  <b-icon-person-lines-fill />
+                </b-button>
+                <b-button
+                  @click="display('Query', row.item.query, $event.target)"
+                  v-b-tooltip="'Show Query Details'"
+                  size="sm"
+                >
+                  <b-icon-search />
+                </b-button>
+                <b-button
+                  @click="display('Processing', row.item.processing, $event.target)"
+                  v-b-tooltip="'Show Processing Details'"
+                  size="sm"
+                >
+                  <b-icon-gear-fill />
+                </b-button>
+              </div>
+            </template>
+            <template #cell(actions)="row">
+              <div class="d-inline-flex gap-1">
+                <template v-if="['FINISHED', 'CANCELLED', 'ERROR'].includes(row.item.status)">
+                  <span class="d-inline-block" tabindex="0" v-b-tooltip="'Cancel Task'">
+                    <b-button size="sm" disabled>
+                      <b-icon-trash />
+                    </b-button>
+                  </span>
+                </template>
+                <template v-else>
+                  <b-button @click="taskCancel(row.item.uuid)" v-b-tooltip="'Cancel Task'" size="sm">
+                    <b-icon-trash />
+                  </b-button>
+                </template>
+                <b-button v-b-tooltip="'Edit Task'" :to="{ name: 'code', params: { uuid: row.item.uuid } }" size="sm">
+                  <b-icon-pencil-square />
+                </b-button>
+                <template v-if="row.item.status !== 'FINISHED' || row.item.expired || row.item.total_results === 0">
+                  <span class="d-inline-block" tabindex="0" v-b-tooltip="'Download Results'">
+                    <b-button size="sm" disabled>
+                      <b-icon-download />
+                    </b-button>
+                  </span>
+                </template>
+                <template v-else>
+                  <b-button
+                    :to="{ name: 'download', params: { uuid: row.item.uuid } }"
+                    v-b-tooltip="'Download Results'"
+                    size="sm"
+                  >
+                    <b-icon-download />
+                  </b-button>
+                </template>
+              </div>
+            </template>
+          </b-paginated-table>
+        </b-col>
+      </b-row>
+    </b-container>
+    <b-details-modal
+      :id="detailsModal.id"
+      :title="detailsModal.title"
+      :content="detailsModal.content"
+      :formatters="detailsModal.formatters"
+      :tabs-align="!$screen.md ? 'center' : 'left'"
+      :footer-button-block="!$screen.md"
+      @reset="
+        detailsModal.title = '';
+        detailsModal.content = {};
+      "
+    />
+    <b-dialog-modal
+      id="task-filter-select"
+      title="Specify Task Filters"
+      @hide="$root.$emit('bv::refresh::table', taskTable.id)"
+    >
+      <label for="task-filter-uuid">Filter by UUID:</label>
+      <b-clearable-input id="task-filter-uuid" v-model="taskTable.filters.uuid" placeholder="Partial / Full UUID" />
+      <p class="d-inline-block mb-2 cursor-default" @click="$refs.taskFilterStatus.$el.querySelector('button').focus()">
+        Filter by Status:
+      </p>
+      <b-dropdown-select
+        id="task-filter-status"
+        ref="taskFilterStatus"
+        aria-label="Filter by Status:"
+        v-model="taskTable.filters.status"
+        :options="[null, 'QUEUED', 'EXECUTING', 'FINISHED', 'CANCELLED', 'ERROR']"
+        placeholder="ALL"
+      />
+  
