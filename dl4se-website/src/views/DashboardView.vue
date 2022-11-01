@@ -358,4 +358,58 @@ export default {
             formatter: (_value, _key, item) => {
               return {
                 submitted: item.submitted ? new Date(Date.parse(item.submitted + "Z")) : null,
-                started: item.started ? new Date(Date.parse(item.started + "Z"
+                started: item.started ? new Date(Date.parse(item.started + "Z")) : null,
+                finished: item.finished ? new Date(Date.parse(item.finished + "Z")) : null,
+              };
+            },
+            tdClass: ["text-center"],
+          },
+          {
+            key: "progress",
+            sortable: false,
+            formatter: (_value, _key, item) => {
+              let percentage;
+              if (item.total_results === 0) {
+                percentage = "0.00%";
+              } else if (item.status === "FINISHED" || item.processed_results > item.total_results) {
+                percentage = "100.00%";
+              } else {
+                percentage = `${((item.processed_results / item.total_results) * 100).toFixed(2)}%`;
+              }
+
+              return {
+                status: item.status,
+                percentage: percentage,
+                processed: item.processed_results,
+                total: item.total_results,
+              };
+            },
+          },
+          {
+            key: "size",
+            sortable: true,
+            formatter: this.formatBytes,
+            tdClass: ["text-right", "text-nowrap"],
+          },
+          {
+            key: "details",
+            sortable: false,
+          },
+          {
+            key: "actions",
+            sortable: false,
+          },
+        ],
+        totalItems: 0,
+      },
+    };
+  },
+  head() {
+    return {
+      title: "Dashboard",
+    };
+  },
+};
+</script>
+
+<style scoped lang="sass" src="@/assets/styles/view/dashboard.sass" />
