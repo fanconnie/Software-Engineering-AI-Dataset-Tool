@@ -186,4 +186,176 @@
         :options="[null, 'QUEUED', 'EXECUTING', 'FINISHED', 'CANCELLED', 'ERROR']"
         placeholder="ALL"
       />
-  
+    </b-dialog-modal>
+  </div>
+</template>
+
+<script>
+import bootstrapMixin from "@/mixins/bootstrapMixin";
+import formatterMixin from "@/mixins/formatterMixin";
+import routerMixin from "@/mixins/routerMixin";
+import BAbbr from "@/components/Abbr";
+import BClearableInput from "@/components/ClearableInput";
+import BDetailsModal from "@/components/DetailsModal";
+import BDialogModal from "@/components/DialogModal";
+import BDropdownSelect from "@/components/DropdownSelect";
+import BIconCalendarExclamation from "@/components/IconCalendarExclamation";
+import BIconCalendarPlay from "@/components/IconCalendarPlay";
+import BIconCalendarQuestion from "@/components/IconCalendarQuestion";
+import BPaginatedTable from "@/components/PaginatedTable";
+import BContentArea from "@/components/ContentArea.vue";
+
+export default {
+  components: {
+    BContentArea,
+    BAbbr,
+    BClearableInput,
+    BDetailsModal,
+    BDialogModal,
+    BDropdownSelect,
+    BIconCalendarExclamation,
+    BIconCalendarPlay,
+    BIconCalendarQuestion,
+    BPaginatedTable,
+  },
+  mixins: [bootstrapMixin, formatterMixin, routerMixin],
+  computed: {
+    tableHeight() {
+      return `${this.$screen.xl ? 370 : 380}px`;
+    },
+  },
+  methods: {
+    statusToSquareIcon(status) {
+      switch (status) {
+        case "QUEUED":
+          return "plus-square-fill";
+        case "EXECUTING":
+          return "caret-right-square-fill";
+        case "FINISHED":
+          return "check-square-fill";
+        case "CANCELLED":
+          return "x-square-fill";
+        case "ERROR":
+          return "exclamation-square-fill";
+        default:
+          return "question-square-fill";
+      }
+    },
+    statusToCalendarIcon(status) {
+      switch (status) {
+        case "QUEUED":
+          return "b-icon-calendar-plus";
+        case "EXECUTING":
+          return "b-icon-calendar-play";
+        case "FINISHED":
+          return "b-icon-calendar-check";
+        case "CANCELLED":
+          return "b-icon-calendar-x";
+        case "ERROR":
+          return "b-icon-calendar-exclamation";
+        default:
+          return "b-icon-calendar-question";
+      }
+    },
+    async taskProvider(ctx) {
+      const params = { page: ctx.currentPage - 1, size: ctx.perPage };
+      if (ctx.sortBy) params.sort = `${ctx.sortBy},${ctx.sortDesc ? "desc" : "asc"}`;
+      const filters = this.taskTable.filters;
+      if (filters.uuid) params.uuid = filters.uuid;
+      if (filters.status) params.status = filters.status;
+      return this.$http
+        .get("/task", { params: params })
+        .then((res) => {
+          this.taskTable.totalItems = res.data.total_items;
+          return res.data.items;
+        })
+        .catch(() => {
+          this.appendToast(
+            "Error Fetching Task Data",
+            "There was a problem retrieving the task data. Refresh the page and try again.",
+            "warning",
+          );
+        });
+    },
+    async taskCancel(uuid) {
+      const endpoint = `/task/${uuid}/cancel`;
+      await this.$http.post(endpoint).catch((err) => {
+        const status = err.response.status;
+        switch (status) {
+          case 400:
+            this.appendToast(
+              "Cannot cancel task",
+              "The task has already finished executing and can not be cancelled.",
+              "secondary",
+            );
+            break;
+          case 401:
+            this.$store.dispatch("logOut").then(() => {
+              this.appendToast("Login Required", "Your session has expired. Please log in again.", "secondary");
+            });
+            break;
+          case 403:
+            this.$store.dispatch("logOut").then(() => {
+              this.appendToast(
+                "Access Restricted",
+                "You do not have the necessary authorization to modify the requested resource.",
+                "secondary",
+              );
+            });
+            break;
+          default:
+            this.$router.push({ name: "home" });
+            break;
+        }
+      });
+      this.$root.$emit("bv::refresh::table", this.taskTable.id);
+    },
+    display(title, item, button) {
+      this.detailsModal.title = title;
+      this.detailsModal.content = item;
+      this.$root.$emit("bv::show::modal", this.detailsModal.id, button);
+    },
+  },
+  data() {
+    return {
+      detailsModal: {
+        id: "details-modal",
+        title: "",
+        content: "",
+        formatters: [
+          {
+            name: "JSON",
+            formatter: this.formatObjectAsJson,
+          },
+          {
+            name: "Text",
+            formatter: this.formatObjectAsTextList,
+          },
+        ],
+      },
+      taskTable: {
+        id: "task-table",
+        filters: {
+          uuid: null,
+          status: null,
+        },
+        fields: [
+          {
+            key: "uuid",
+            label: "UUID",
+            sortable: true,
+            tdClass: ["text-nowrap", "text-monospace"],
+          },
+          {
+            key: "status",
+            sortable: true,
+            tdClass: ["text-center"],
+          },
+          {
+            key: "submitted",
+            label: "Timeline",
+            sortable: true,
+            formatter: (_value, _key, item) => {
+              return {
+                submitted: item.submitted ? new Date(Date.parse(item.submitted + "Z")) : null,
+                started: item.started ? new Date(Date.parse(item.started + "Z"
