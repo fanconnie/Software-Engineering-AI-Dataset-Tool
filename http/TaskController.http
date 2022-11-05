@@ -1,0 +1,60 @@
+### POST /task/{dataset}/create
+POST localhost:8080/api/task/code/create
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "query" : {
+    "granularity" : "function",
+    "language_name" : "Java",
+    "has_license" : false,
+    "exclude_forks" : true,
+    "min_commits" : 100,
+    "min_contributors" : 10,
+    "min_issues" : 5,
+    "min_stars" : 20,
+    "min_tokens" : 10,
+    "max_tokens" : 5000,
+    "min_lines" : 3,
+    "max_lines" : 200,
+    "min_characters" : 100,
+    "max_characters" : 10000,
+    "exclude_duplicates" : true,
+    "exclude_identical" : true,
+    "exclude_test" : false,
+    "exclude_non_ascii" : true,
+    "exclude_errors": true,
+    "exclude_boilerplate" : true
+  },
+  "processing" : {
+    "include_ast" : false,
+    "include_symbolic_expression": false,
+    "include_tree_sitter_version" : false,
+    "remove_regular_comments" : false,
+    "remove_documentation_comments" : false
+  }
+}
+
+### POST /task/{uuid}/cancel
+POST localhost:8080/api/task/{{uuid}}/cancel
+Authorization: Bearer {{token}}
+
+### GET /task
+GET localhost:8080/api/task
+Authorization: Bearer {{token}}
+
+### GET /task/{uuid}
+GET localhost:8080/api/task/{{uuid}}
+Authorization: Bearer {{token}}
+
+### GET /task/stats
+GET localhost:8080/api/task/stats
+Authorization: Bearer {{token}}
+
+### GET /task/{uuid}/token
+GET localhost:8080/api/task/{{uuid}}/token
+Authorization: Bearer {{token}}
+
+### GET /task/{uuid}/download
+GET localhost:8080/api/task/{{uuid}}/download?token={{task_token}}
+Content-Type: application/gzip

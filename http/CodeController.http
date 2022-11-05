@@ -1,0 +1,4 @@
+
+### GET /code/{id}
+GET localhost:8080/api/code/{{code_id}}
+Authorization: Bearer {{token}}

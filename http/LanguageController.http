@@ -1,0 +1,3 @@
+### GET /language
+GET localhost:8080/api/language
+Authorization: Bearer {{token}}
