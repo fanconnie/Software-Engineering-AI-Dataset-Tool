@@ -16,4 +16,11 @@ CREATE TABLE "user" (
 CREATE TABLE "token" (
     "id" bigint PRIMARY KEY NOT NULL,
     "type" text NOT NULL,
-    "
+    "value" text UNIQUE NOT NULL,
+    "user_id" bigint NOT NULL,
+    "expires" timestamp NOT NULL
+);
+
+ALTER TABLE "token" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("id") ON DELETE CASCADE;
+
+CREATE INDEX "token_user_id_idx" ON "token" (user_id);

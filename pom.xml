@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+    
+  <groupId>ch.usi.si.seart</groupId>
+  <artifactId>dl4se</artifactId>
+  <version>${revision}</version>
+  <packaging>pom</packaging>
+    
+  <name>${project.groupId}:${project.artifactId}</name>
+  <description>
+    Building Training Datasets for Deep Learning Models in Software Engineering.
+  </description>
+  <inceptionYear>2021</inceptionYear>
+  <organization>
+    <name>SEART</name>
+    <url>https://seart.si.usi.ch/</url>
+  </organization>
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>https://github.com/seart-group/DL4SE/blob/main/LICENSE</url>
+    </license>
+  </licenses>
+
+  <profiles>
+    <profile>
+      <id>crawler</id>
+      <modules>
+        <module>dl4se-model</module>
+        <module>dl4se-analyzer</module>
+        <module>dl4se-crawler</module>
+        <module>dl4se-spring</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>server</id>
+      <modules>
+        <module>dl4se-model</module>
+        <module>dl4se-server</module>
+        <module>dl4se-spring</module>
+        <module>dl4se-transformer</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>default</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <modules>
+        <module>dl4se-model</module>
+        <module>dl4se-analyzer</module>
+        <module>dl4se-crawler</module>
+        <module>dl4se-server</module>
+        <module>dl4se-spring</module>
+        <module>dl4se-transformer</module>
+      </modules>
+    </profile>
+  </profiles>
+
+  <properties>
+    <revision>1.0.0</revision>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.module.mainClass>ch.usi.si.seart.Application</project.module.mainClass>
+    <java-tree-sitter.version>1.12.0</java-tree-sitter.version>
+    <junit.version>5.10.2</junit.version>
+    <lombok.version>1.18.32</lombok.version>
+    <google.guava.version>33.2.1-jre</google.guava.version>
+    <google.http-client.version>1.44.2</google.http-client.version>
+    <janino.version>3.1.12</janino.version>
+    <postgresql.version>42.7.3</postgresql.version>
+    <jjwt.version>0.12.5</jjwt.version>
+    <jackson.version>2.17.1</jackson.version>
+    <spring-boot.version>2.7.18</spring-boot.version>
+    <spring-cloud.version>2021.0.8</spring-cloud.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>${junit.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson</groupId>
+        <artifactId>jackson-bom</artifactId>
+        <version>${jackson.version}</version>
+        <type>pom</type>
+        <
